@@ -1,38 +1,90 @@
-.App {
+html, body {
+  height: 100%;
+  background-color: #FFB4A2;
+}
+
+html {
+  box-sizing: border-box;
+  font-size: 10px;
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+body {
+  font-size: 1.6rem;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+*, ::before, ::after {
+  box-sizing: inherit;
+
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
+#main {
+  width: 100%;
+  min-height: 100%;
+}
+
+#header {
+  max-height:100px;
+  min-height: 10vh;
+  background-color: #6D6875;
+  color: #E5989B;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 5rem;
+  font-family: 'Times New Roman', Times, serif;
+  /* border-bottom-width: 1rem;
+  border-bottom-color: black; */
+}
+
+#mainform {
+  width:100%;
+  min-height: 90vh;
+  padding: 1rem;
+  margin:auto;
+  display:flex;
+  flex-flow: row wrap;
+  justify-content:space-evenly;
+  align-items: stretch;
+  align-content: center;
+  font-family:Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.inputComp {
+  color: black;
+  padding: 1.5rem;
+  margin: 1rem;
+  background-color:#B5838D;
+  max-width: 500px;
+  max-height: 500px;
+  flex: 1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+  align-items: center;
+  border-radius: 25px;
+  font-size: 3rem;
+  /* border-bottom-width: 1rem;
+  border-bottom-color: black;
+  border-right-width: 1rem;
+  border-right-color: black; */
 }
 
-.App-link {
-  color: #61dafb;
+button {
+  border-radius: 5px;
+  font-size: 2rem;
+  font-weight: bold;
+  padding-top: 1.5rem;
+  padding-bottom: 1.5rem;
+  padding-left: 2.5rem;
+  padding-right: 2.5rem;
+  /* background-color: #6D6875;
+  color: #E5989B; */
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+input {
+  border-radius: 5px;
+  font-size: 2rem;
 }
+
+
