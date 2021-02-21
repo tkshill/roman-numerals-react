@@ -8,7 +8,6 @@ import './App.css';
 // create boring regular unit tests in suite
 // move fast check to suite
 // create suite for unit tests
-// change ok and err to types, not classes
 
 type ActionType =
   | 'ToRomanClicked'
