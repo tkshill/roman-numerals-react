@@ -64,6 +64,8 @@ body {
   align-items: center;
   border-radius: 25px;
   font-size: 3rem;
+  overflow: hidden;
+  gap: 1rem;
 }
 
 button {

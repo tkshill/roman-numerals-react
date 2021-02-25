@@ -8,18 +8,18 @@ import App from './App';
 
 describe('Standard unit testing our Roman Numeral', () => {
   it('should convert 5 to "V"', () => {
-    const result = RomanNumeral.fromInt(5);
-    expect(result.isOk() ? result.value.asString() : undefined).toBe("V");
+    const result = RomanNumeral.fromInt(5) as Ok<RomanNumeral, Error[]>;
+    expect(result.value.asString()).toBe("V");
   })
 
   it('should convert 555 to "DLV"', () => {
-    const result = RomanNumeral.fromInt(555);
-    expect(result.isOk() ? result.value.asString() : undefined).toBe("DLV");
+    const result = RomanNumeral.fromInt(555) as Ok<RomanNumeral, Error[]>;
+    expect(result.value.asString()).toBe("DLV");
   })
 
   it('should convert 1234 to "MCCXXXIV"', () => {
-    const result = RomanNumeral.fromInt(555);
-    expect(result.isOk() ? result.value.asString() : undefined).toBe("MCCXXXIV");
+    const result = RomanNumeral.fromInt(1234) as Ok<RomanNumeral, Error[]>;
+    expect(result.value.asString()).toBe("MCCXXXIV");
   })
 
   it('should reject numbers bigger than 3999', () => {
@@ -43,7 +43,7 @@ describe('Doing property based tests', () => {
   })
 
   test('should not accept values less than 1 or greater than 3999', () => {
-    const arbInvalidInts = fc.integer().filter((int) => int < 1 || int >= 2000)
+    const arbInvalidInts = fc.integer().filter((i) => i < 1 || i >= 2000)
 
     const testPredicate = (int: number) => {
       const result = RomanNumeral.fromInt(int);
@@ -54,27 +54,28 @@ describe('Doing property based tests', () => {
   })
 
   const romanregex = /^M{0,3}(CM|CD|D?C{0,4})(XC|XL|L?X{0,4})(IX|IV|V?I{0,4})$/;
+  const noFourOfs = /^((?!(M{4}|C{4}|X{4}|I{4})).)*$/;
 
   test('Valid numbers should produce valid roman numeral strings', () => {
     const answerStrings =
       fc.integer({ min: 1, max: 3999 })
-        .map(RomanNumeral.fromInt)
-        .map(rRm => rRm instanceof Ok ? rRm.value : undefined)
-        .map(rm => rm!.asString())
+        .map(i => RomanNumeral.fromInt(i) as Ok<RomanNumeral, Error[]>)
+        .map(rRm => rRm.value)
+        .map(rm => rm.asString())
 
-    const test = (rms: string) => {
+    const testPredicate = (rms: string) => {
       expect(rms).toMatch(romanregex)
     }
 
-    fc.assert(fc.property(answerStrings, test), { verbose: true })
+    fc.assert(fc.property(answerStrings, testPredicate), { verbose: true })
   })
 
   const arbPlaceMaker = (single: string, fourth: string, fifth: string, ninth: string) => {
-    const arbFirsts = fc.stringOf(fc.constant(single), { minLength: 0, maxLength: 3 });
-    const arbFourth = fc.constant(fourth);
+    const arbFirsts = fc.stringOf(fc.constant(single), { minLength: 0, maxLength: 4 });
     const arbFifth = fc.stringOf(fc.constant(fifth), { minLength: 0, maxLength: 1 })
-    const arbNinth = fc.constant(ninth);
     const arbFirstsAndFifth = fc.tuple(arbFifth, arbFirsts).map(vis => vis[0] + vis[1]);
+    const arbFourth = fc.constant(fourth);
+    const arbNinth = fc.constant(ninth);
 
     return fc.oneof(arbNinth, arbFourth, arbFirstsAndFifth);
   }
@@ -89,7 +90,7 @@ describe('Doing property based tests', () => {
       .map(tup => tup[0] + tup[1] + tup[2] + tup[3])
       .filter(val => val !== "")
 
-  test('all valid strings produce are accepted', () => {
+  test('all valid strings should be accepted', () => {
     const testPredicate = (str: string) => {
       const result = RomanNumeral.fromString(str);
       expect(result).toBeInstanceOf(Ok);
@@ -98,9 +99,9 @@ describe('Doing property based tests', () => {
     fc.assert(fc.property(arbValidStrings, testPredicate))
   })
 
-  test('invalid inputs should be rejected', () => {
+  test('invalid strings should be rejected', () => {
     const arbInvalidStrings =
-      fc.string().filter(s => Array.from(s.matchAll(romanregex)).length === 0)
+      fc.string().filter(s => !romanregex.test(s))
 
     const testPredicate = (str: string) => {
       const result = RomanNumeral.fromString(str);
@@ -112,18 +113,17 @@ describe('Doing property based tests', () => {
 
 
   test('round trips are idempotent excepting chunks of four', () => {
+
+    const arbValidStrings_ = arbValidStrings.filter(noFourOfs.test);
+
     const testPredicate = (inputstr: string) => {
-      const result1 = RomanNumeral.fromString(inputstr);
-      expect(result1).toBeInstanceOf(Ok);
+      const result1 = RomanNumeral.fromString(inputstr) as Ok<RomanNumeral, Error[]>
+      const result2 = RomanNumeral.fromInt(result1.value.asInt()) as Ok<RomanNumeral, Error[]>
 
-      const result2 = (result1 instanceof Ok) ? RomanNumeral.fromInt(result1.value.asInt()) : undefined;
-      expect(result2).toBeInstanceOf(Ok);
-
-      const resultstr = (result2 instanceof Ok) ? result2.value.asString() : undefined;
-      expect(resultstr).toBe(inputstr);
+      expect(result2.value.asString()).toBe(inputstr);
     }
 
-    fc.assert(fc.property(arbValidStrings, testPredicate));
+    fc.assert(fc.property(arbValidStrings_, testPredicate));
   })
 
 })
@@ -154,10 +154,10 @@ describe('Integration tests with property based tests', () => {
       fireEvent.change(getByTestId('intInput'), { target: { value: int.toString() } })
       fireEvent.click(getByTestId('intbutton'))
 
-      const conversion = RomanNumeral.fromInt(int)
+      const conversion = RomanNumeral.fromInt(int) as Ok<RomanNumeral, Error[]>
       const result = (getByTestId('intResult') as HTMLParagraphElement).textContent
 
-      expect(result).toBe('value' in conversion ? conversion.value.asString() : undefined)
+      expect(result).toBe(conversion.value.asString())
     }
 
     fc.assert(fc.property(arbInts, testPredicate))

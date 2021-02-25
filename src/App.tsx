@@ -108,16 +108,13 @@ interface InputProps {
 const InputCom = ({ id, name, value, onChange, onClick, result, resultid, buttonid }: InputProps) => {
   return (<div className="inputComp">
     <label htmlFor={id}>{name}</label>
-    <br />
     <input data-testid={id}
       type="text"
       id={id}
       value={value}
       onChange={onChange}
     />
-    <br />
     <button type="submit" data-testid={buttonid} onClick={onClick}>Convert</button>
-    <br />
     <p data-testid={resultid}>{result}</p>
   </div >)
 }

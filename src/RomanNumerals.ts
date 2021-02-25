@@ -36,33 +36,36 @@ const parseError: Error = {
   message: "Value is not a valid Roman Numeral",
 };
 
-type RomanNumeralDigit =
-  | "I"
-  | "II"
-  | "III"
-  | "IIII"
-  | "IV"
-  | "V"
-  | "IX"
-  | "X"
-  | "XX"
-  | "XXX"
-  | "XXXX"
-  | "XL"
-  | "L"
-  | "XC"
-  | "C"
-  | "CC"
-  | "CCC"
-  | "CCCC"
-  | "CD"
-  | "D"
-  | "CM"
-  | "M"
-  | "MM"
-  | "MMM";
+const romanDigits = [
+  "MMM",
+  "MM",
+  "M",
+  "CM",
+  "CD",
+  "D",
+  "CCCC",
+  "CCC",
+  "CC",
+  "C",
+  "XC",
+  "XL",
+  "L",
+  "XXXX",
+  "XXX",
+  "XX",
+  "X",
+  "IX",
+  "IV",
+  "V",
+  "IIII",
+  "III",
+  "II",
+  "I",
+] as const;
 
-const romanDigitToInt = (r: RomanNumeralDigit): number => {
+type RomanDigit = typeof romanDigits[number];
+
+const romanDigitToInt = (r: RomanDigit): number => {
   switch (r) {
     case "I":
       return 1;
@@ -112,90 +115,31 @@ const romanDigitToInt = (r: RomanNumeralDigit): number => {
   }
 };
 
-const stringToRomanDigits = (input: string): RomanNumeralDigit[] => {
-  const result: RomanNumeralDigit[] = [];
-  while (input.length > 0) {
-    if (input.slice(0, 4) === "IIII") {
-      result.push("IIII");
-      input = input.slice(4);
-    } else if (input.slice(0, 4) === "XXXX") {
-      result.push("XXXX");
-      input = input.slice(4);
-    } else if (input.slice(0, 4) === "CCCC") {
-      result.push("CCCC");
-      input = input.slice(4);
-    } else if (input.slice(0, 3) === "III") {
-      result.push("III");
-      input = input.slice(3);
-    } else if (input.slice(0, 3) === "XXX") {
-      result.push("XXX");
-      input = input.slice(3);
-    } else if (input.slice(0, 3) === "CCC") {
-      result.push("CCC");
-      input = input.slice(3);
-    } else if (input.slice(0, 3) === "MMM") {
-      result.push("MMM");
-      input = input.slice(3);
-    } else if (input.slice(0, 2) === "II") {
-      result.push("II");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "XX") {
-      result.push("XX");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "CC") {
-      result.push("CC");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "MM") {
-      result.push("MM");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "IV") {
-      result.push("IV");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "IX") {
-      result.push("IX");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "XL") {
-      result.push("XL");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "XC") {
-      result.push("XC");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "CD") {
-      result.push("CD");
-      input = input.slice(2);
-    } else if (input.slice(0, 2) === "CM") {
-      result.push("CM");
-      input = input.slice(2);
-    } else if (input.slice(0, 1) === "I") {
-      result.push("I");
-      input = input.slice(1);
-    } else if (input.slice(0, 1) === "V") {
-      result.push("V");
-      input = input.slice(1);
-    } else if (input.slice(0, 1) === "X") {
-      result.push("X");
-      input = input.slice(1);
-    } else if (input.slice(0, 1) === "L") {
-      result.push("L");
-      input = input.slice(1);
-    } else if (input.slice(0, 1) === "C") {
-      result.push("C");
-      input = input.slice(1);
-    } else if (input.slice(0, 1) === "D") {
-      result.push("D");
-      input = input.slice(1);
-    } else if (input.slice(0, 1) === "M") {
-      result.push("M");
-      input = input.slice(1);
+const stringToRomanDigits = (input: string): RomanDigit[] => {
+  // using reduce, this function iterates through the full list of roman digits,
+  // adding them to an accumulating list if they can be found in the input string
+
+  type Accumulator = [RomanDigit[], string];
+
+  const reducer = (acc: Accumulator, rd: RomanDigit): Accumulator => {
+    const [foundDigits, remainingString] = acc;
+    const digitLength = rd.length;
+
+    //if the start of the string matches the roman numeral digit
+    if (remainingString.slice(0, digitLength) === rd) {
+      // add the digit to the list of found digits. remove the digit from the string
+      return [foundDigits.concat([rd]), remainingString.slice(digitLength)];;
     } else {
-      throw new Error("Cannot parse string");
+      return acc;
     }
-  }
-  return result;
+  };
+
+  return romanDigits.reduce(reducer, [[], input])[0];
 };
 
 // cant use replaceall apparently. incompatible with some javascript versions
 const toString = (input: RomanNumeral): string =>
+  // makes an array of ones("I") the length of the input value, then uses replace to "divide" down to the correct representation.
   Array(input.value)
     .fill("I")
     .join("")
@@ -215,6 +159,10 @@ const toString = (input: RomanNumeral): string =>
 const ROMANREGEX = /^M{0,3}(CM|CD|D?C{0,4})(XC|XL|L?X{0,4})(IX|IV|V?I{0,4})$/;
 
 export default class RomanNumeral {
+  // public interface for the module.
+
+  // constructor is private because we want instantiation to only happen through the
+  // fromInt and fromString functions.
   private constructor(readonly value: number) {}
 
   asInt = () => this.value;
