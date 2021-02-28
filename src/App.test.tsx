@@ -43,7 +43,7 @@ describe('Doing property based tests', () => {
   })
 
   test('should not accept values less than 1 or greater than 3999', () => {
-    const arbInvalidInts = fc.integer().filter((i) => i < 1 || i >= 2000)
+    const arbInvalidInts = fc.integer().filter((i) => i < 1 || i >= 4000)
 
     const testPredicate = (int: number) => {
       const result = RomanNumeral.fromInt(int);
@@ -60,8 +60,7 @@ describe('Doing property based tests', () => {
     const answerStrings =
       fc.integer({ min: 1, max: 3999 })
         .map(i => RomanNumeral.fromInt(i) as Ok<RomanNumeral, Error[]>)
-        .map(rRm => rRm.value)
-        .map(rm => rm.asString())
+        .map(rRm => rRm.value.asString())
 
     const testPredicate = (rms: string) => {
       expect(rms).toMatch(romanregex)
@@ -114,7 +113,7 @@ describe('Doing property based tests', () => {
 
   test('round trips are idempotent excepting chunks of four', () => {
 
-    const arbValidStrings_ = arbValidStrings.filter(noFourOfs.test);
+    const arbValidStrings_ = arbValidStrings.filter(x => noFourOfs.test(x));
 
     const testPredicate = (inputstr: string) => {
       const result1 = RomanNumeral.fromString(inputstr) as Ok<RomanNumeral, Error[]>
@@ -127,8 +126,6 @@ describe('Doing property based tests', () => {
   })
 
 })
-
-
 
 afterEach(cleanup)
 
